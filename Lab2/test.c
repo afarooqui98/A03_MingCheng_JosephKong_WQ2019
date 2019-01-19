@@ -8,25 +8,11 @@
 
 // TODO Configure SPI port and use these libraries to implement
 // an OLED test program. See SPI example program.
-
-
+#include "test.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
 
-extern int cursor_x;
-extern int cursor_y;
-
 float p = 3.1415926;
-
-// Color definitions
-#define	BLACK           0x0000
-#define	BLUE            0x001F
-#define	GREEN           0x07E0
-#define CYAN            0x07FF
-#define	RED             0xF800
-#define MAGENTA         0xF81F
-#define YELLOW          0xFFE0
-#define WHITE           0xFFFF
 
 //*****************************************************************************
 //  function delays 3*ulCount cycles

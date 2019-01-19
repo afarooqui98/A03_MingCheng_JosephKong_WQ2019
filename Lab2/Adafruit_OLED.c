@@ -30,16 +30,23 @@ void writeCommand(unsigned char c) {
 /* Write a function to send a command byte c to the OLED via
 *  SPI.
 */
+  unsigned long ulDummy;
   // set CS to low to starting reading data
+  MAP_SPICSEnable(GSPI_BASE);
   GPIOPinWrite(GPIOA3_BASE, 0x2, 0);
 
   // set DC to low to write command
-  GPIOPinWrite(GPIOA2_BASE, 0x40, 0);
+  GPIOPinWrite(GPIOA2_BASE, 0x40, 0x0);
 
   MAP_SPIDataPut(GSPI_BASE, c);
 
+  MAP_SPIDataGet(GSPI_BASE,&ulDummy);
+
   // set CS to high to end sending data
+
+  MAP_SPICSDisable(GSPI_BASE);
   GPIOPinWrite(GPIOA3_BASE, 0x2, 0x2);
+
 }
 //*****************************************************************************
 
@@ -48,16 +55,21 @@ void writeData(unsigned char c) {
 //TODO 2
 /* Write a function to send a data byte c to the OLED via
 *  SPI.
-*/
+*/  unsigned long ulDummy;
     // set CS to low to starting reading data
+    MAP_SPICSEnable(GSPI_BASE);
     GPIOPinWrite(GPIOA3_BASE, 0x2, 0);
 
-    // set DC to low to write command
+    // set DC to high to write data
     GPIOPinWrite(GPIOA2_BASE, 0x40, 0x40);
 
     MAP_SPIDataPut(GSPI_BASE, c);
 
+    MAP_SPIDataGet(GSPI_BASE,&ulDummy);
+
     // set CS to high to end sending data
+
+    MAP_SPICSDisable(GSPI_BASE);
     GPIOPinWrite(GPIOA3_BASE, 0x2, 0x2);
 }
 
