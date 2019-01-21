@@ -16,6 +16,10 @@ extern int cursor_y;
 
 //  function delays 3*ulCount cycles
 void delay(unsigned long ulCount);
+void testhelloworld();
+void testfullchar();
+void testhorizontal();
+void testvertical();
 void testfastlines(unsigned int color1, unsigned int color2);
 void testdrawrects(unsigned int color);
 void testfillrects(unsigned int color1, unsigned int color2);

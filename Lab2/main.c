@@ -1,5 +1,6 @@
 // Standard includes
 #include <string.h>
+#include <stdio.h>
 
 // Driverlib includes
 #include "hw_types.h"
@@ -151,15 +152,86 @@ void main()
     //
     // Enable the SPI module clock
     //
-    //AP_PRCMPeripheralClkEnable(PRCM_GSPI,PRCM_RUN_MODE_CLK);
+    MAP_PRCMPeripheralClkEnable(PRCM_GSPI,PRCM_RUN_MODE_CLK);
 
-  //  MAP_PRCMPeripheralReset(PRCM_GSPI);
+    // Reset SPI
+    MAP_SPIReset(GSPI_BASE);
+
+    MAP_PRCMPeripheralReset(PRCM_GSPI);
     MasterMain();
+    fillScreen(BLACK);
     while(1)
     {
-       writeCommand('c');
-       writeData('d');
+        printf("Testing testfullchar():\n");
+        testfullchar();
+        printf("Finish testing testfullchar\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testhelloworld():\n");
+        testhelloworld();
+        printf("Finish testing testhelloworld()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testhorizontal():\n");
+        testhorizontal();
+        printf("Finish testing testhorizontal()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testvertical():\n");
+        testvertical();
+        printf("Finish testing testvertical()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testlines():\n");
+        testlines(BLUE);
+        printf("Finish testing testlines()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testfastlines():\n");
+        testfastlines(MAGENTA, RED);
+        printf("Finish testing testfastlines()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testdrawrects():\n");
+        testdrawrects(YELLOW);
+        printf("Finish testing testdrawrects()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testfillrects():\n");
+        testfillrects(CYAN, GREEN);
+        printf("Finish testing testfillrects()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testfillcircles():\n");
+        testfillcircles(10, BLUE);
+        printf("Finish testing testfillcircles()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        fillScreen(BLACK);
+        testdrawcircles(12, RED);
+        printf("Finish testing testdrawcircles()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testroundrects():\n");
+        testroundrects();
+        printf("Finish testing testroundrects()\n");
+        fillScreen(BLACK);
+        delay(100);
+
+        printf("Testing testtriangles():\n");
+        testtriangles();
+        printf("Finish testing testtriangles()\n");
+        fillScreen(BLACK);
+        delay(100);
     }
-
 }
-

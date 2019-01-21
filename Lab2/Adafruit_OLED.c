@@ -1,6 +1,7 @@
 
 // Standard includes
 #include <string.h>
+#include <stdio.h>
 
 // Driverlib includes
 #include "hw_types.h"
@@ -22,6 +23,10 @@
 
 #include "Adafruit_SSD1351.h"
 
+// Adafruit libraries
+#include "Adafruit_GFX.h"
+#include "glcdfont.h"
+
 //*****************************************************************************
 
 void writeCommand(unsigned char c) {
@@ -31,21 +36,24 @@ void writeCommand(unsigned char c) {
 *  SPI.
 */
   unsigned long ulDummy;
-  // set CS to low to starting reading data
+
+  // set CS to low to starting reading data -> Pin 61
   MAP_SPICSEnable(GSPI_BASE);
-  GPIOPinWrite(GPIOA3_BASE, 0x2, 0);
+  GPIOPinWrite(GPIOA0_BASE, 0x40, 0x00);
 
-  // set DC to low to write command
-  GPIOPinWrite(GPIOA2_BASE, 0x40, 0x0);
+  // set DC to low to write command -> Pin 62
+  GPIOPinWrite(GPIOA0_BASE, 0x80, 0x00);
 
+  // send the character
   MAP_SPIDataPut(GSPI_BASE, c);
 
-  MAP_SPIDataGet(GSPI_BASE,&ulDummy);
+  // clean up the received register
+  MAP_SPIDataGet(GSPI_BASE, &ulDummy);
 
-  // set CS to high to end sending data
+  // set CS to high to end sending data -> Pin 61
 
   MAP_SPICSDisable(GSPI_BASE);
-  GPIOPinWrite(GPIOA3_BASE, 0x2, 0x2);
+  GPIOPinWrite(GPIOA0_BASE, 0x40, 0x40);
 
 }
 //*****************************************************************************
@@ -56,21 +64,23 @@ void writeData(unsigned char c) {
 /* Write a function to send a data byte c to the OLED via
 *  SPI.
 */  unsigned long ulDummy;
-    // set CS to low to starting reading data
+
+    // set CS to low to starting reading data -> Pin 61
     MAP_SPICSEnable(GSPI_BASE);
-    GPIOPinWrite(GPIOA3_BASE, 0x2, 0);
+    GPIOPinWrite(GPIOA0_BASE, 0x40, 0x00);
 
-    // set DC to high to write data
-    GPIOPinWrite(GPIOA2_BASE, 0x40, 0x40);
+    // set DC to high to write data -> Pin 62
+    GPIOPinWrite(GPIOA0_BASE, 0x80, 0x80);
 
+    // send the data
     MAP_SPIDataPut(GSPI_BASE, c);
 
-    MAP_SPIDataGet(GSPI_BASE,&ulDummy);
+    // clean up received register
+    MAP_SPIDataGet(GSPI_BASE, &ulDummy);
 
-    // set CS to high to end sending data
-
+    // set CS to high to end sending data -> Pin 61
     MAP_SPICSDisable(GSPI_BASE);
-    GPIOPinWrite(GPIOA3_BASE, 0x2, 0x2);
+    GPIOPinWrite(GPIOA0_BASE, 0x40, 0x40);
 }
 
 //*****************************************************************************

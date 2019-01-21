@@ -11,6 +11,9 @@
 #include "test.h"
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
+#include "glcdfont.h"
+#include "string.h"
+#include "stdio.h"
 
 float p = 3.1415926;
 
@@ -27,6 +30,78 @@ void delay(unsigned long ulCount){
 
 
 //*****************************************************************************
+
+void testhelloworld() {
+    drawChar(0, 64, 'H', BLUE, BLUE, 2);
+    drawChar(10, 64, 'e', BLUE, BLUE, 2);
+    drawChar(20, 64, 'l', BLUE, BLUE, 2);
+    drawChar(30, 64, 'l', BLUE, BLUE, 2);
+    drawChar(40, 64, 'o', BLUE, BLUE, 2);
+    drawChar(60, 64, 'W', BLUE, BLUE, 2);
+    drawChar(70, 64, 'o', BLUE, BLUE, 2);
+    drawChar(80, 64, 'r', BLUE, BLUE, 2);
+    drawChar(90, 64, 'l', BLUE, BLUE, 2);
+    drawChar(100, 64, 'd', BLUE, BLUE, 2);
+    drawChar(110, 64, '!', BLUE, BLUE, 2);
+
+}
+
+//*****************************************************************************
+
+void testfullchar() {
+    int i;
+    int x = 0, y = 0;
+    for(i = 0; i < 1275; i++) {
+        //if(font[i] == 0x00) {
+            //continue;
+        //}
+        if(x == 0 && y == 0) {
+            fillScreen(BLACK);
+        }
+        //fillScreen(BLACK);
+        drawChar(x, y, font[i], RED, RED, 1);
+        x = x + 8;
+        if(x >= 128) {
+            x = 0;
+            y = y + 10;
+        }
+        if(y >= 128) {
+            y = 0;
+        }
+       // printf("%d: %d, %d\n", i, x, y);
+    }
+
+}
+
+//*****************************************************************************
+
+void testhorizontal() {
+    fillRect(0, 0, 16, 128, BLUE);
+    fillRect(16, 0, 16, 128, BLUE + 100);
+    fillRect(32, 0, 16, 128, RED);
+    fillRect(48, 0, 16, 128, CYAN);
+    fillRect(64, 0, 16, 128, GREEN);
+    fillRect(80, 0, 16, 128, YELLOW);
+    fillRect(96, 0, 16, 128, WHITE);
+    fillRect(112, 0, 16, 128, MAGENTA);
+
+}
+
+//*****************************************************************************
+
+void testvertical() {
+    fillRect(0, 0, 128, 16, BLUE);
+    fillRect(0, 16, 128, 16, BLUE + 100);
+    fillRect(0, 32, 128, 16, RED);
+    fillRect(0, 48, 128, 16, CYAN);
+    fillRect(0, 64, 128, 16, GREEN);
+    fillRect(0, 80, 128, 16, YELLOW);
+    fillRect(0, 96, 128, 16, WHITE);
+    fillRect(0, 112, 128, 16, MAGENTA);
+}
+
+//*****************************************************************************
+
 void testfastlines(unsigned int color1, unsigned int color2) {
 	unsigned int x;
 	unsigned int y;
