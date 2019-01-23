@@ -528,10 +528,27 @@ void main()
     fillScreen(BLACK);
     int x_position = 63, y_position = 63;
     int x, y;
+    int x_rand = rand() % 125;
+    int y_rand = rand() % 125;
+
+    int current_size = 4;
     while(1)
     {
         char x_buffer[256] = "readreg 0x18 0x5 1 \n\r";
         char y_buffer[256] = "readreg 0x18 0x3 1 \n\r";
+
+        // initialize random dot
+
+        // if eat it
+        if(abs(x_position - x_rand) <= current_size && abs(y_position - y_rand) <= current_size ) {
+           fillCircle(x_rand, y_rand, 2, BLACK);
+           x_rand = rand() % (127 - current_size);
+           y_rand = rand() % (127 - current_size);
+           current_size += 2;
+        }
+
+        fillCircle(x_rand, y_rand, 2, RED);
+
 
         // find the speed of x and y
         x = ParseNProcessCmd(x_buffer);
@@ -546,18 +563,18 @@ void main()
         y_position += y;
 
         // bound the ball postion
-        if(x_position >= 123)
-            x_position = 123;
-        else if(x_position <= 4)
-            x_position = 4;
-        if(y_position >= 123)
-            y_position = 123;
-        else if(y_position <= 4)
-            y_position = 4;
+        if(x_position >= (127 - current_size))
+            x_position = 127 - current_size;
+        else if(x_position <= current_size)
+            x_position = current_size;
+        if(y_position >= (127 - current_size))
+            y_position = 127 - current_size;
+        else if(y_position <= current_size)
+            y_position = current_size;
 
         // fill the circle
-        fillCircle(x_position, y_position, 4, BLUE);
+        fillCircle(x_position, y_position, current_size, BLUE);
         // flushing the display
-        fillCircle(x_position, y_position, 4, BLACK);
+        fillCircle(x_position, y_position, current_size, BLACK);
     }
 }
