@@ -18,9 +18,9 @@
 #include "Adafruit_GFX.h"
 #include "Adafruit_SSD1351.h"
 #include "glcdfont.h"
-#include "test.h"
 #include "hw_apps_rcm.h"
 #include "gpio.h"
+#include  "test.h"
 #include "utils.h"
 
 // Common interface includes
@@ -44,6 +44,16 @@
 
 #define SPI_IF_BIT_RATE  100000
 #define TR_BUFF_SIZE     100
+
+// Color definitions
+#define BLACK           0x0000
+#define BLUE            0x001F
+#define GREEN           0x07E0
+#define CYAN            0x07FF
+#define RED             0xF800
+#define MAGENTA         0xF81F
+#define YELLOW          0xFFE0
+#define WHITE           0xFFFF
 
 
 //*****************************************************************************
@@ -137,62 +147,6 @@ BoardInit(void)
 //!
 //! \return None.
 //
-//*****************************************************************************
-
-//*****************************************************************************
-//
-//! Display a prompt for the user to enter command
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//*****************************************************************************
-void
-DisplayPrompt()
-{
-    UART_PRINT("\n\rcmd#");
-}
-
-//*****************************************************************************
-//
-//! Display the usage of the I2C commands supported
-//!
-//! \param  none
-//!
-//! \return none
-//!
-//*****************************************************************************
-void
-DisplayUsage()
-{
-    UART_PRINT("Command Usage \n\r");
-    UART_PRINT("------------- \n\r");
-    UART_PRINT("write <dev_addr> <wrlen> <<byte0> [<byte1> ... ]> <stop>\n\r");
-    UART_PRINT("\t - Write data to the specified i2c device\n\r");
-    UART_PRINT("read  <dev_addr> <rdlen> \n\r\t - Read data frpm the specified "
-                "i2c device\n\r");
-    UART_PRINT("writereg <dev_addr> <reg_offset> <wrlen> <<byte0> [<byte1> ... "
-                "]> \n\r");
-    UART_PRINT("\t - Write data to the specified register of the i2c device\n\r");
-    UART_PRINT("readreg <dev_addr> <reg_offset> <rdlen> \n\r");
-    UART_PRINT("\t - Read data from the specified register of the i2c device\n\r");
-    UART_PRINT("\n\r");
-    UART_PRINT("Parameters \n\r");
-    UART_PRINT("---------- \n\r");
-    UART_PRINT("dev_addr - slave address of the i2c device, a hex value "
-                "preceeded by '0x'\n\r");
-    UART_PRINT("reg_offset - register address in the i2c device, a hex value "
-                "preceeded by '0x'\n\r");
-    UART_PRINT("wrlen - number of bytes to be written, a decimal value \n\r");
-    UART_PRINT("rdlen - number of bytes to be read, a decimal value \n\r");
-    UART_PRINT("bytex - value of the data to be written, a hex value preceeded "
-                "by '0x'\n\r");
-    UART_PRINT("stop - number of stop bits, 0 or 1\n\r");
-    UART_PRINT("--------------------------------------------------------------"
-                "--------------- \n\r\n\r");
-
-}
 
 //*****************************************************************************
 //
@@ -204,22 +158,20 @@ DisplayUsage()
 //! \return none
 //!
 //*****************************************************************************
-void
+int
 DisplayBuffer(unsigned char *pucDataBuf, unsigned char ucLen)
 {
     unsigned char ucBufIndx = 0;
-    //UART_PRINT("Read contents");
-   // UART_PRINT("\n\r");
+    int buffer;
     while(ucBufIndx < ucLen)
     {
-        printf(" 0x%x, ", pucDataBuf[ucBufIndx]);
-        ucBufIndx++;
-        if((ucBufIndx % 8) == 0)
-        {
-            printf("\n\r");
+        buffer = (int) pucDataBuf[ucBufIndx];
+        if(buffer & 0x80) {
+            buffer = buffer | 0xffffff00;
         }
+        ucBufIndx++;
     }
-    printf("\n\r");
+    return buffer;
 }
 
 //
@@ -263,7 +215,7 @@ ProcessReadCommand(char *pcInpString)
 
     if(iRetVal == SUCCESS)
     {
-        UART_PRINT("I2C Read complete\n\r");
+        printf("I2C Read complete\n\r");
 
         //
         // Display the buffer over UART on successful write
@@ -272,7 +224,7 @@ ProcessReadCommand(char *pcInpString)
     }
     else
     {
-        UART_PRINT("I2C Read failed\n\r");
+        printf("I2C Read failed\n\r");
         return FAILURE;
     }
 
@@ -332,14 +284,10 @@ ProcessReadRegCommand(char *pcInpString)
     //
     RET_IF_ERR(I2C_IF_Read(ucDevAddr, &aucRdDataBuf[0], ucRdLen));
 
-    UART_PRINT("I2C Read From address complete\n\r");
-
     //
     // Display the buffer over UART on successful readreg
     //
-    DisplayBuffer(aucRdDataBuf, ucRdLen);
-
-    return SUCCESS;
+    return DisplayBuffer(aucRdDataBuf, ucRdLen);
 }
 
 //****************************************************************************
@@ -406,7 +354,7 @@ ProcessWriteRegCommand(char *pcInpString)
     //
     RET_IF_ERR(I2C_IF_Write(ucDevAddr,&aucDataBuf[0],ucWrLen+1,1));
 
-    UART_PRINT("I2C Write To address complete\n\r");
+    printf("I2C Write To address complete\n\r");
 
     return SUCCESS;
 }
@@ -471,11 +419,11 @@ ProcessWriteCommand(char *pcInpString)
     iRetVal = I2C_IF_Write(ucDevAddr, aucDataBuf, ucLen, ucStopBit);
     if(iRetVal == SUCCESS)
     {
-        UART_PRINT("I2C Write complete\n\r");
+        printf("I2C Write complete\n\r");
     }
     else
     {
-        UART_PRINT("I2C Write failed\n\r");
+        printf("I2C Write failed\n\r");
         return FAILURE;
     }
 
@@ -499,7 +447,7 @@ int
 ParseNProcessCmd(char *pcCmdBuffer)
 {
     char *pcInpString;
-    int iRetVal = FAILURE;
+    int iRetVal;
 
     pcInpString = strtok(pcCmdBuffer, " \n\r");
     if(pcInpString != NULL)
@@ -536,7 +484,7 @@ ParseNProcessCmd(char *pcCmdBuffer)
         }
         else
         {
-            UART_PRINT("Unsupported command\n\r");
+            printf("Unsupported command\n\r");
             return FAILURE;
         }
     }
@@ -578,15 +526,38 @@ void main()
     MAP_PRCMPeripheralReset(PRCM_GSPI);
     MasterMain();
     fillScreen(BLACK);
-    int counter = 0;
-    ParseNProcessCmd("readreg 0x18 0x3 1");
+    int x_position = 63, y_position = 63;
+    int x, y;
     while(1)
     {
-        fillScreen(BLACK);
-        if(counter >= 128)
-            counter = 0;
-        printf("Displaying Ball\n");
-        fillCircle(64 + counter, 64, 4 , BLUE);
-        counter++;
+        char x_buffer[256] = "readreg 0x18 0x5 1 \n\r";
+        char y_buffer[256] = "readreg 0x18 0x3 1 \n\r";
+
+        // find the speed of x and y
+        x = ParseNProcessCmd(x_buffer);
+        y = ParseNProcessCmd(y_buffer);
+
+        // rescale the speed
+        x = x / 5;
+        y = y / 5;
+
+        // add speed to current position of the ball
+        x_position += x;
+        y_position += y;
+
+        // bound the ball postion
+        if(x_position >= 123)
+            x_position = 123;
+        else if(x_position <= 4)
+            x_position = 4;
+        if(y_position >= 123)
+            y_position = 123;
+        else if(y_position <= 4)
+            y_position = 4;
+
+        // fill the circle
+        fillCircle(x_position, y_position, 4, BLUE);
+        // flushing the display
+        fillCircle(x_position, y_position, 4, BLACK);
     }
 }
