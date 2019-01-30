@@ -1,3 +1,4 @@
+// Authors: Ming Cheng, Joseph Kong
 // Standard includes
 #include <string.h>
 #include <stdio.h>
