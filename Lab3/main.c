@@ -1,22 +1,7 @@
-
-//*****************************************************************************
-//
-// Application Name     - int_sw
-// Application Overview - The objective of this application is to demonstrate
-//							GPIO interrupts using SW2 and SW3.
-//							NOTE: the switches are not debounced!
-//
-//*****************************************************************************
-
-//****************************************************************************
-//
-//! \addtogroup int_sw
-//! @{
-//
-//****************************************************************************
-
+// Authors: Ming Cheng, Joseph Kong
 // Standard includes
 #include <stdio.h>
+#include <stdbool.h>
 
 // Driverlib includes
 #include "hw_types.h"
@@ -31,6 +16,8 @@
 #include "prcm.h"
 #include "gpio.h"
 #include "utils.h"
+#include "timer_if.h"
+#include "timer.h"
 
 // Common interface includes
 #include "uart_if.h"
@@ -58,6 +45,8 @@
 extern void (* const g_pfnVectors[])(void);
 
 volatile unsigned long PIN61_intcount;
+volatile unsigned long timer_count;
+volatile unsigned long tmp;
 volatile unsigned char PIN61_intflag;
 
 
@@ -84,12 +73,46 @@ static void BoardInit(void);
 static void GPIOA0IntHandler(void) {	// PIN61 handler
 	unsigned long ulStatus;
 
+	MAP_TimerDisable(TIMERA0_BASE, TIMER_A);
     ulStatus = MAP_GPIOIntStatus (PIN61.port, true);
     MAP_GPIOIntClear(PIN61.port, ulStatus);		// clear interrupts on GPIOA0
+    Timer_IF_InterruptClear(TIMERA0_BASE);
     PIN61_intcount++;
-    PIN61_intflag=1;
+
+    if(PIN61_intcount > 18) {
+        PIN61_intflag=1;
+        tmp = timer_count;
+    }
+
+    if(PIN61_intcount == 34) {
+        PIN61_intcount = 0;
+    }
+
+    timer_count = 0;
+
+    MAP_TimerEnable(TIMERA0_BASE, TIMER_A);
 }
 
+static void timer0BaseIntHandler(void)
+{
+    Timer_IF_InterruptClear(TIMERA0_BASE);
+    timer_count++;
+}
+
+
+static void TimerRefIntHandler(void)
+{
+    Timer_IF_InterruptClear(TIMERA1_BASE);
+    timer_count++;
+    //MAP_GPIOIntEnable(PIN61.port, PIN61.pin);
+   // MAP_TimerEnable(TIMERA2_BASE, TIMER_A);
+}
+
+static void TimerPulseIntHandler(void)
+{
+    Timer_IF_InterruptClear(TIMERA2_BASE);
+    //MAP_TimerDisable(TIMERA2_BASE, TIMER_A);
+}
 
 //*****************************************************************************
 //
@@ -145,13 +168,34 @@ int main() {
     ulStatus = MAP_GPIOIntStatus (PIN61.port, false);
     MAP_GPIOIntClear(PIN61.port, ulStatus);			// clear interrupts on GPIOA0
 
+    Timer_IF_Init(PRCM_TIMERA0, TIMERA0_BASE, TIMER_CFG_PERIODIC, TIMER_A, 0);
+    Timer_IF_Init(PRCM_TIMERA1, TIMERA1_BASE, TIMER_CFG_PERIODIC, TIMER_A, 0);
+    Timer_IF_Init(PRCM_TIMERA2, TIMERA2_BASE, TIMER_CFG_ONE_SHOT, TIMER_A, 0);
+
+
+    Timer_IF_IntSetup(TIMERA0_BASE, TIMER_A, timer0BaseIntHandler);
+    Timer_IF_IntSetup(TIMERA1_BASE, TIMER_A, TimerRefIntHandler);
+    Timer_IF_IntSetup(TIMERA2_BASE, TIMER_A, TimerPulseIntHandler);
+
+   // Timer_IF_Start(TIMERA0_BASE, TIMER_A, 40);
+
+    MAP_TimerLoadSet(TIMERA0_BASE, TIMER_A, MILLISECONDS_TO_TICKS(0.001));
+    MAP_TimerLoadSet(TIMERA1_BASE, TIMER_A, MILLISECONDS_TO_TICKS(100));
+    MAP_TimerLoadSet(TIMERA2_BASE, TIMER_A, MILLISECONDS_TO_TICKS(1000));
+
+
     // clear global variables
     PIN61_intcount = 0;
     PIN61_intflag = 0;
+    timer_count = 0;
 
     // Enable PIN61 interrupts
     MAP_GPIOIntEnable(PIN61.port, PIN61.pin);
 
+
+    // Enable timer interrupts
+    //Timer_IF_Start(TIMERA1_BASE, TIMER_A, 1000);
+    MAP_TimerEnable(TIMERA0_BASE, TIMER_A);
 
     Message("\t****************************************************\n\r");
     Message("\tPress a button on the Remote to see which button you pressed\n\r");
@@ -163,7 +207,7 @@ int main() {
     	while (PIN61_intflag == 0) {;}
     	if (PIN61_intflag) {
     		PIN61_intflag = 0;	// clear flag
-    		Report("PIN61 ints = %d\r\n", PIN61_intcount);
+    		Report("PIN61 ints = %d\r\nTimer count = %d\r\n", PIN61_intcount, tmp);
     	}
     }
 }
